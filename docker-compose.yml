@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fairpay-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fairpay}
+      POSTGRES_USER: ${POSTGRES_USER:-fairpay}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fairpay}
+    ports:
+      - "5432:5432"
+    volumes:
+      - fairpay-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fairpay} -d ${POSTGRES_DB:-fairpay}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: fairpay-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@fairpay.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  fairpay-postgres-data:
